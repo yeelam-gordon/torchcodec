@@ -103,6 +103,14 @@ jobs:
           export LIBAVIF_ROOT="${PWD}/libavif"
           packaging/build_libavif_arm64.bat
 
+      - name: Debug pkg-config location
+        shell: powershell
+        run: |
+          where.exe pkg-config.exe
+          Get-ChildItem C:\tools\msys64\usr\bin\pkg-config.exe -ErrorAction SilentlyContinue
+          Get-ChildItem C:\tools\msys64\mingw64\bin\pkg-config.exe -ErrorAction SilentlyContinue
+          Get-ChildItem C:\tools\msys64\clangarm64\bin\pkg-config.exe -ErrorAction SilentlyContinue
+
       - name: Build wheel
         shell: cmd
         run: call packaging\vc_env_helper_arm64.bat packaging\build_wheel_arm64.bat
