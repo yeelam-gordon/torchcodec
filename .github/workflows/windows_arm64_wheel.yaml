@@ -89,6 +89,15 @@ jobs:
           export FFMPEG_ROOT="${PWD}/ffmpeg"
           packaging/build_ffmpeg_arm64.bat
 
+      - name: Debug FFmpeg pkg-config and libs
+        run: |
+          ls -R ffmpeg || true
+          ls -R ffmpeg/lib/pkgconfig || true
+          cat ffmpeg/lib/pkgconfig/libavutil.pc || true
+          cat ffmpeg/lib/pkgconfig/libavcodec.pc || true
+          ls -R ffmpeg/bin || true
+          ls -R ffmpeg/lib || true
+
       - name: Build libavif
         run: |
           export LIBAVIF_ROOT="${PWD}/libavif"
