@@ -28,5 +28,6 @@ set PROJ_FOLDER=%cd%
 choco install -y --no-progress msys2 --package-parameters "/NoUpdate" || exit /b 1
 C:\tools\msys64\usr\bin\env MSYSTEM=CLANGARM64 /bin/bash -l -c "pacman -S --noconfirm --needed base-devel mingw-w64-clang-aarch64-toolchain diffutils" || exit /b 1
 C:\tools\msys64\usr\bin\env MSYSTEM=CLANGARM64 /bin/bash -l -c "cd \"${PROJ_FOLDER}\" && packaging/build_ffmpeg.sh" || exit /b 1
+if exist "%PROJ_FOLDER%\ffmpeg\bin\*.lib" copy /Y "%PROJ_FOLDER%\ffmpeg\bin\*.lib" "%PROJ_FOLDER%\ffmpeg\lib\" >nul || exit /b 1
 
 :end
