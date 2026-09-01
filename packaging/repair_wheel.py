@@ -238,33 +238,40 @@ def repair_windows(wheels):
     # repack with `wheel` so the RECORD is regenerated.
     run([sys.executable, "-m", "pip", "install", "-U", "wheel"])
     bin_dir = Path(os.environ.get("CONDA_PREFIX", "")) / "Library" / "bin"
+    build_image = os.environ.get("TORCHCODEC_BUILD_IMAGE") != "0"
 
-    jpeg_dlls = set(bin_dir.glob("jpeg*.dll")) | set(bin_dir.glob("libjpeg*.dll"))
-    if not jpeg_dlls:
-        raise FileNotFoundError(f"No libjpeg DLL found under {bin_dir}")
-    png_dlls = set(bin_dir.glob("libpng*.dll")) | set(bin_dir.glob("png*.dll"))
-    if not png_dlls:
-        raise FileNotFoundError(f"No libpng DLL found under {bin_dir}")
-    # libpng depends on zlib; bundle it too so libpng can resolve it at load time.
-    zlib_dlls = set(bin_dir.glob("zlib*.dll")) | set(bin_dir.glob("libz*.dll"))
-    if not zlib_dlls:
-        raise FileNotFoundError(f"No zlib DLL found under {bin_dir}")
-    # libwebp depends on libsharpyuv; bundle both.
-    webp_dlls = set(bin_dir.glob("libwebp*.dll")) | set(bin_dir.glob("webp*.dll"))
-    if not webp_dlls:
-        raise FileNotFoundError(f"No libwebp DLL found under {bin_dir}")
-    sharpyuv_dlls = set(bin_dir.glob("libsharpyuv*.dll")) | set(
-        bin_dir.glob("sharpyuv*.dll")
-    )
-    if not sharpyuv_dlls:
-        raise FileNotFoundError(f"No libsharpyuv DLL found under {bin_dir}")
-    # libavif comes from our S3 build (not conda): its DLL is in the FetchContent
-    # build dir's bin/.
-    avif_dlls = set(Path("build").glob("*/_deps/avif_s3-src/bin/libavif*.dll"))
-    if not avif_dlls:
-        raise FileNotFoundError("No libavif DLL under build/*/_deps/avif_s3-src/bin")
-
-    dlls = jpeg_dlls | png_dlls | zlib_dlls | webp_dlls | sharpyuv_dlls | avif_dlls
+    dlls = set()
+    if build_image:
+        jpeg_dlls = set(bin_dir.glob("jpeg*.dll")) | set(bin_dir.glob("libjpeg*.dll"))
+        if not jpeg_dlls:
+            raise FileNotFoundError(f"No libjpeg DLL found under {bin_dir}")
+        png_dlls = set(bin_dir.glob("libpng*.dll")) | set(bin_dir.glob("png*.dll"))
+        if not png_dlls:
+            raise FileNotFoundError(f"No libpng DLL found under {bin_dir}")
+        # libpng depends on zlib; bundle it too so libpng can resolve it at load time.
+        zlib_dlls = set(bin_dir.glob("zlib*.dll")) | set(bin_dir.glob("libz*.dll"))
+        if not zlib_dlls:
+            raise FileNotFoundError(f"No zlib DLL found under {bin_dir}")
+        # libwebp depends on libsharpyuv; bundle both.
+        webp_dlls = set(bin_dir.glob("libwebp*.dll")) | set(bin_dir.glob("webp*.dll"))
+        if not webp_dlls:
+            raise FileNotFoundError(f"No libwebp DLL found under {bin_dir}")
+        sharpyuv_dlls = set(bin_dir.glob("libsharpyuv*.dll")) | set(
+            bin_dir.glob("sharpyuv*.dll")
+        )
+        if not sharpyuv_dlls:
+            raise FileNotFoundError(f"No libsharpyuv DLL found under {bin_dir}")
+        # libavif comes from our S3 build (not conda): its DLL is in the FetchContent
+        # build dir's bin/.
+        avif_dlls = set(Path("build").glob("*/_deps/avif_s3-src/bin/libavif*.dll"))
+        if not avif_dlls:
+            raise FileNotFoundError("No libavif DLL under build/*/_deps/avif_s3-src/bin")
+        dlls |= jpeg_dlls | png_dlls | zlib_dlls | webp_dlls | sharpyuv_dlls | avif_dlls
+    else:
+        # ARM64 CI currently builds without image codecs (TORCHCODEC_BUILD_IMAGE=0)
+        # since libjpeg/libpng/libwebp aren't yet packaged for win-arm64; skip
+        # bundling their DLLs in that case.
+        print("Skipping image codec DLL bundling because TORCHCODEC_BUILD_IMAGE=0")
 
     if any(_is_cuda_wheel(w) for w in wheels):
         nvjpeg_dlls = set(_find_nvjpeg_libs())
