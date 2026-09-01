@@ -14,6 +14,8 @@ set TORCHCODEC_BUILD_IMAGE=0
 set TORCHCODEC_BUILD_HEIC=0
 set PKG_CONFIG_PATH=%FFMPEG_ROOT%\lib\pkgconfig
 set CMAKE_PREFIX_PATH=%LIBAVIF_ROOT%
+set PATH=C:\tools\msys64\usr\bin;C:\tools\msys64\clangarm64\bin;%PATH%
 
 echo BUILD-WHEEL-STEP-ACTUALLY-RAN
+where pkg-config.exe || exit /b 1
 python -m build --wheel -vvv --no-isolation || exit /b 1
