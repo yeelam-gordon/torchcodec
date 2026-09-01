@@ -62,7 +62,8 @@ if [[ "${TORCHCODEC_FFMPEG_FULL_BUILD:-0}" == "1" ]]; then
         --enable-demuxer=mov,matroska,wav
         --enable-parser=aac,h264,hevc,mpeg4video,opus,vorbis,vp9,av1
         --enable-decoder=aac,flac,h264,hevc,mjpeg,mp3,mpeg4,pcm_s16le,pcm_s16be,pcm_f32le,pcm_f32be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,pcm_u8,opus,vorbis,vp9,av1
-        --enable-encoder=aac,flac,mpeg4,pcm_s16le
+        --enable-encoder=aac,ffv1,flac,mpeg4,pcm_s16le
+        --enable-decoder=ffv1
     )
 fi
 
