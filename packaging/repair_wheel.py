@@ -658,6 +658,8 @@ def check_bundling():
                     f"Homebrew-installed FFmpeg. Its rpaths are: {rpaths}"
                 )
 
+    build_image = os.environ.get("TORCHCODEC_BUILD_IMAGE") != "0"
+
     def _assert_third_party_licenses(zf, is_cuda):
         """Every bundled third-party lib must ship its license text under
         .dist-info/licenses/third_party/ (see bundle_third_party_licenses)."""
@@ -668,7 +670,7 @@ def check_bundling():
         ]
         # keyword each bundled lib's license file must be identifiable by. CUDA
         # wheels also bundle libnvjpeg, whose NVIDIA CUDA EULA must ship too.
-        keywords = ["jpeg", "png", "zlib", "webp", "avif", "dav1d", "yuv"]
+        keywords = ["jpeg", "png", "zlib", "webp", "avif", "dav1d", "yuv"] if build_image else []
         if is_cuda:
             keywords.append("nvjpeg")
         for keyword in keywords:
@@ -689,19 +691,20 @@ def check_bundling():
                     f"Unexpected libraries bundled in {wheel.name}: "
                     + " ".join(unexpected)
                 )
-            if not any(_is_jpeg(lib) for lib in libs):
-                raise RuntimeError(f"{wheel.name} does not bundle libjpeg.")
-            if not any(_is_png(lib) for lib in libs):
-                raise RuntimeError(f"{wheel.name} does not bundle libpng.")
-            if not any(_is_webp(lib) for lib in libs):
-                raise RuntimeError(f"{wheel.name} does not bundle libwebp.")
-            if not any(lib.lower().startswith(("libavif", "avif")) for lib in libs):
-                raise RuntimeError(f"{wheel.name} does not bundle libavif.")
-            if not any(_is_webp_demux(lib) for lib in libs):
-                raise RuntimeError(
-                    f"{wheel.name} does not bundle libwebpdemux (needed for "
-                    "animated webp decoding)."
-                )
+            if build_image:
+                if not any(_is_jpeg(lib) for lib in libs):
+                    raise RuntimeError(f"{wheel.name} does not bundle libjpeg.")
+                if not any(_is_png(lib) for lib in libs):
+                    raise RuntimeError(f"{wheel.name} does not bundle libpng.")
+                if not any(_is_webp(lib) for lib in libs):
+                    raise RuntimeError(f"{wheel.name} does not bundle libwebp.")
+                if not any(lib.lower().startswith(("libavif", "avif")) for lib in libs):
+                    raise RuntimeError(f"{wheel.name} does not bundle libavif.")
+                if not any(_is_webp_demux(lib) for lib in libs):
+                    raise RuntimeError(
+                        f"{wheel.name} does not bundle libwebpdemux (needed for "
+                        "animated webp decoding)."
+                    )
             is_cuda = _is_cuda_wheel(wheel)
             bundles_nvjpeg = any(_is_nvjpeg(lib) for lib in libs)
             if is_cuda and not bundles_nvjpeg:
@@ -737,12 +740,13 @@ def check_bundling():
                     "Bump MAX_WHEEL_BYTES if a legitimate dependency growth pushes us over. "
                 )
             if platform.system() == "Linux":
-                _assert_linux_libjpeg_is_turbo(zf)
-                _assert_linux_lib_no_ffmpeg(zf, "libtorchcodec_image.so")
+                if build_image:
+                    _assert_linux_libjpeg_is_turbo(zf)
+                    _assert_linux_lib_no_ffmpeg(zf, "libtorchcodec_image.so")
                 _assert_linux_lib_no_ffmpeg(zf, "libtorchcodec_pybind_ops.so")
             elif platform.system() == "Darwin":
                 _assert_macos_homebrew_rpath_is_present(zf)
-        print("OK: only libjpeg (and allowed libs) bundled.")
+        print("OK: bundled library checks passed.")
 
 
 def main():
