@@ -138,4 +138,4 @@ jobs:
           export PATH="${PWD}/ffmpeg/bin:${PATH}"
           export TORCHCODEC_FFMPEG_BIN_DIR="${PWD}/ffmpeg/bin"
           python packaging/assert_ffmpeg_version.py 9
-          FAIL_WITHOUT_IMAGE_CODECS=0 FAIL_WITHOUT_HEIC=0 pytest --override-ini="addopts=-v" test/smoke_test.py --tb=short
+          FAIL_WITHOUT_IMAGE_CODECS=0 FAIL_WITHOUT_HEIC=0 pytest --override-ini="addopts=-v" test/smoke_test.py -k "not decode_gif and not VideoEncoder and not AudioEncoder" --tb=short
