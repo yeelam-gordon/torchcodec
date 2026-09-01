@@ -45,9 +45,10 @@ tar -xf ffmpeg.tar.gz --strip-components 1
 # probe fails with "gcc is unable to create an executable file." Every other
 # platform this script runs on (Linux, macOS, the existing Windows x86_64
 # MINGW64 job) does have a working gcc and is unaffected by this override.
-extra_configure_args=()
+pre_configure_args=()
+post_configure_args=()
 if [[ "${MSYSTEM:-}" == "CLANGARM64" ]]; then
-    extra_configure_args+=(--cc=clang --cxx=clang++)
+    pre_configure_args+=(--cc=clang --cxx=clang++)
 fi
 
 if [[ "${TORCHCODEC_FFMPEG_FULL_BUILD:-0}" == "1" ]]; then
@@ -55,7 +56,7 @@ if [[ "${TORCHCODEC_FFMPEG_FULL_BUILD:-0}" == "1" ]]; then
     # FFmpeg skeleton for build-time linkage. Windows ARM64 wheel CI cannot rely
     # on a separate conda-provided runtime FFmpeg, so it opts into a functional
     # LGPL-only subset that is sufficient for torchcodec's smoke tests.
-    extra_configure_args+=(
+    post_configure_args+=(
         --enable-protocol=file
         --enable-muxer=mp4,matroska,wav
         --enable-demuxer=mov,matroska,wav
@@ -66,7 +67,7 @@ if [[ "${TORCHCODEC_FFMPEG_FULL_BUILD:-0}" == "1" ]]; then
 fi
 
 ./configure \
-    "${extra_configure_args[@]}" \
+    "${pre_configure_args[@]}" \
     --prefix="${prefix}" \
     --disable-all \
     --disable-everything \
@@ -97,7 +98,8 @@ fi
     --enable-avformat \
     --enable-avutil \
     --enable-swscale \
-    --enable-swresample
+    --enable-swresample \
+    "${post_configure_args[@]}"
 
 make -j install
 ls ${prefix}/*
