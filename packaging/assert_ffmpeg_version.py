@@ -13,6 +13,12 @@ Usage:
 """
 
 import sys
+import os
+
+if os.name == "nt":
+    ffmpeg_bin = os.environ.get("TORCHCODEC_FFMPEG_BIN_DIR")
+    if ffmpeg_bin and os.path.isdir(ffmpeg_bin):
+        os.add_dll_directory(ffmpeg_bin)
 
 import torchcodec
 

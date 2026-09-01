@@ -136,11 +136,6 @@ jobs:
       - name: Run ARM64 smoke test
         run: |
           export PATH="${PWD}/ffmpeg/bin:${PATH}"
-          cat > packaging/probe_dll.py <<'EOF'
-          import os
-          os.add_dll_directory(os.path.join(os.getcwd(), "ffmpeg", "bin"))
-          import torchcodec
-          print("ffmpeg_major_version:", torchcodec.ffmpeg_major_version)
-          EOF
-          python packaging/probe_dll.py
+          export TORCHCODEC_FFMPEG_BIN_DIR="${PWD}/ffmpeg/bin"
+          python packaging/assert_ffmpeg_version.py 9
           FAIL_WITHOUT_IMAGE_CODECS=0 FAIL_WITHOUT_HEIC=0 pytest --override-ini="addopts=-v" test/smoke_test.py --tb=short

@@ -4,6 +4,11 @@ import random
 import pytest
 import torch
 
+if os.name == "nt":
+    ffmpeg_bin = os.environ.get("TORCHCODEC_FFMPEG_BIN_DIR")
+    if ffmpeg_bin and os.path.isdir(ffmpeg_bin):
+        os.add_dll_directory(ffmpeg_bin)
+
 from .utils import (
     avif_is_available,
     heic_is_available,
