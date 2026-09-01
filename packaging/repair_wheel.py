@@ -386,7 +386,13 @@ def bundle_third_party_licenses():
         return {f.name: f for f in sorted(dirs[0].iterdir()) if f.is_file()}
 
     run([sys.executable, "-m", "pip", "install", "-U", "wheel"])
-    base_licenses = {**_resolve_conda_licenses(), **_resolve_avif_licenses()}
+    if os.environ.get("TORCHCODEC_BUILD_IMAGE") == "0":
+        # ARM64 CI currently builds without image codecs (TORCHCODEC_BUILD_IMAGE=0),
+        # so these wheels do not bundle the conda-provided image codec DLLs or the
+        # S3-fetched libavif stack that require third-party license injection here.
+        base_licenses = {}
+    else:
+        base_licenses = {**_resolve_conda_licenses(), **_resolve_avif_licenses()}
     print("Third-party license files to bundle:")
     for name, src in sorted(base_licenses.items()):
         print(f"  {name} <- {src}")
