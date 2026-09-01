@@ -61,8 +61,9 @@ jobs:
     env:
       FFMPEG_VERSION: "9.0"
       LIBAVIF_VERSION: "1.4.2"
+      TORCHCODEC_BUILD_IMAGE: "0"
       TORCHCODEC_BUILD_HEIC: "0"
-      FAIL_WITHOUT_IMAGE_CODECS: "1"
+      FAIL_WITHOUT_IMAGE_CODECS: "0"
       FAIL_WITHOUT_HEIC: "0"
     steps:
       - name: Check out repo
