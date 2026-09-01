@@ -93,6 +93,10 @@ def pytest_collection_modifyitems(items):
         needs_webp = item.get_closest_marker("needs_webp") is not None
         needs_avif = item.get_closest_marker("needs_avif") is not None
         needs_heic = item.get_closest_marker("needs_heic") is not None
+        gif_disabled = (
+            os.environ.get("TORCHCODEC_BUILD_IMAGE") == "0"
+            and item.nodeid.endswith("TestImageDecoder::test_decode_gif")
+        )
         has_skip_marker = item.get_closest_marker("skip") is not None
 
         # For skipif, the marker is always present regardless of whether the
@@ -142,6 +146,9 @@ def pytest_collection_modifyitems(items):
 
         if needs_heic and skip_image_decoder_test("heic"):
             item.add_marker(pytest.mark.skip(reason="libheif support not available."))
+
+        if gif_disabled:
+            item.add_marker(pytest.mark.skip(reason="GIF support not built in this configuration."))
 
         out_items.append(item)
 
